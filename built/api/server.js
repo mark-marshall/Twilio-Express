@@ -31,10 +31,10 @@ app.get('/', (req, res) => {
 });
 // EP2: Send SMS
 app.post('/sendSMS', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { messsage, recipient } = req.body;
+    const { messsage, recipient, aphaId } = req.body;
     const messageObj = yield client.messages.create({
         body: messsage,
-        from: number,
+        from: aphaId || number,
         to: recipient,
         statusCallback: 'https://3a6a27175479.ngrok.io/smsHook'
     });
@@ -66,5 +66,30 @@ app.post('/sendMMS', (req, res) => __awaiter(void 0, void 0, void 0, function* (
         statusCallback: 'https://3a6a27175479.ngrok.io/smsHook'
     });
     res.status(200).json({ messageSid: messageObj.sid });
+}));
+// EP6: Initiate Conversation
+app.post('/startConversation', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { conversationName } = req.body;
+    const conversation = yield client.conversations.conversations.create({
+        friendlyName: conversationName
+    });
+    res.status(200).json({ conversationSid: conversation.sid });
+}));
+// EP7: Add SMS Participant to Conversation
+app.post('/addSMSParticipant', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { conversationSid, participantANumber } = req.body;
+    const participantA = yield client.conversations.conversations(conversationSid).participants.create({
+        'messagingBinding.address': participantANumber,
+        'messagingBinding.proxyAddress': number
+    });
+    res.status(200).json({ participantSid: participantA.sid });
+}));
+// EP8: Add Chat Participant to Conversation
+app.post('/addChatParticipant', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { conversationSid, participantBIdentity } = req.body;
+    const participantB = yield client.conversations.conversations(conversationSid).participants.create({
+        'identity': participantBIdentity,
+    });
+    res.status(200).json({ participantSid: participantB.sid });
 }));
 module.exports = app;

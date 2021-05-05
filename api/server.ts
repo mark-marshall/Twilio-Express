@@ -28,10 +28,10 @@ app.get('/', (req: Request, res: Response) => {
 
 // EP2: Send SMS
 app.post('/sendSMS', async (req: Request, res: Response) => {
-  const { messsage, recipient } = req.body;
+  const { messsage, recipient, aphaId } = req.body;
   const messageObj = await client.messages.create({
     body: messsage,
-    from: number,
+    from: aphaId || number,
     to: recipient,
     statusCallback: 'https://3a6a27175479.ngrok.io/smsHook'
   })
@@ -67,5 +67,34 @@ app.post('/sendMMS', async (req: Request, res: Response) => {
   })
   res.status(200).json({ messageSid: messageObj.sid })
 })
+
+// EP6: Initiate Conversation
+app.post('/startConversation', async (req: Request, res: Response) => {
+  const { conversationName } = req.body;
+  const conversation = await client.conversations.conversations.create({
+    friendlyName: conversationName
+  })
+  res.status(200).json({ conversationSid: conversation.sid })
+})
+
+// EP7: Add SMS Participant to Conversation
+app.post('/addSMSParticipant', async (req: Request, res: Response) => {
+  const { conversationSid, participantANumber } = req.body;
+  const participantA = await client.conversations.conversations(conversationSid).participants.create({
+    'messagingBinding.address': participantANumber,
+    'messagingBinding.proxyAddress': number
+  })
+  res.status(200).json({ participantSid: participantA.sid })
+})
+
+// EP8: Add Chat Participant to Conversation
+app.post('/addChatParticipant', async (req: Request, res: Response) => {
+  const { conversationSid, participantBIdentity } = req.body;
+  const participantB = await client.conversations.conversations(conversationSid).participants.create({
+    'identity': participantBIdentity,
+  })
+  res.status(200).json({ participantSid: participantB.sid })
+})
+
 
 module.exports = app;
