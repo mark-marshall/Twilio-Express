@@ -31,6 +31,7 @@ app.post('/sendSMS', async (req: Request, res: Response) => {
   const { messsage, recipient, aphaId } = req.body;
   const messageObj = await client.messages.create({
     body: messsage,
+    // Send from standard number if not alphaId not provided
     from: aphaId || number,
     to: recipient,
     statusCallback: 'https://3a6a27175479.ngrok.io/smsHook'
