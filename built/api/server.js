@@ -125,7 +125,7 @@ app.post('/say', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     res.type('text/xml');
     res.send(twiml);
 }));
-// EP1: Forward a call
+// EP2: Forward a call
 app.post('/forward', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const forwardingNum = '+19473334160';
     const twiml = `
@@ -134,8 +134,50 @@ app.post('/forward', (req, res) => __awaiter(void 0, void 0, void 0, function* (
         <Say>Goodbye</Say>
     </Response>
     `;
-    const response = new VoiceResponse();
     res.type('text/xml');
     res.send(twiml);
+}));
+// EP3: Make call and then an announement
+app.post('/callStart', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log('hi');
+    const { recipient } = req.body;
+    yield client.calls.create({
+        to: recipient,
+        from: number,
+        url: 'https://17c40bea9a81.ngrok.io/callDuring',
+        statusCallback: 'https://17c40bea9a81.ngrok.io/callAfter',
+        statusCallbackMethod: 'POST',
+        record: true,
+    });
+    res.status(200);
+}));
+// EP3B
+app.post('/callDuring', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { CallSid } = req.body;
+    client
+        .calls(CallSid)
+        .update({
+        twiml: `<Response>
+    <Gather input="speech dtmf" timeout="3" numDigits="1">
+        <Say>Please press 1 or say sales for sales.</Say>
+    </Gather>
+</Response>`,
+    })
+        .then((call) => console.log(call.to));
+}));
+// EP3C
+app.post('/callAfter', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { RecordingUrl } = req.body;
+    console.log(RecordingUrl);
+    res.status(200).json({ recording: RecordingUrl });
+}));
+// EP4: Route and screen a call
+app.post('/callRouteScreen', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { Digits } = req.body;
+    const extensions = {
+        2: 'Brodo',
+        3: 'Dagobah',
+        4: 'Oober',
+    };
 }));
 module.exports = app;
