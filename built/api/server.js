@@ -15,6 +15,8 @@ const bodyParser = require('body-parser');
 const twilio = require('twilio');
 const MessagingResponse = require('twilio').twiml.MessagingResponse;
 const VoiceResponse = require('twilio').twiml.VoiceResponse;
+// ================== File Imports ==================
+const { models } = require('../model/index');
 // ================== Server setup ==================
 const app = express();
 app.use(express.json());
@@ -174,10 +176,66 @@ app.post('/callAfter', (req, res) => __awaiter(void 0, void 0, void 0, function*
 // EP4: Route and screen a call
 app.post('/callRouteScreen', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { Digits } = req.body;
+    console.log('hi');
     const extensions = {
-        2: 'Brodo',
-        3: 'Dagobah',
-        4: 'Oober',
+        1: 'Mark',
+        2: 'Abby',
+        3: 'Amie',
     };
+    if (Digits) {
+        const agent = yield models.Agent.findOne({ name: extensions[Digits] });
+        console.log(agent);
+        if (agent) {
+            const twiml = new VoiceResponse();
+            twiml.say({ voice: 'alice', language: 'en-GB' }, "You'll be connected shortly to your planet.");
+            const dial = twiml.dial({
+                callerId: agent.number,
+            });
+            dial.number(agent.number);
+            res.send(twiml.toString());
+        }
+        else {
+            const twimlSay = `
+      <Response>
+          <Say>
+            No agents available, goodbye.
+          </Say>
+      </Response>
+    `;
+            res.type('text/xml');
+            res.send(twimlSay);
+        }
+    }
+    else {
+        const twimlSay = `
+      <Response>
+        <Gather>
+          <Say>
+            Press any series of numbers on your keypad followed by the hash key.
+          </Say>
+        </Gather>
+      </Response>
+    `;
+        res.type('text/xml');
+        res.send(twimlSay);
+    }
 }));
+// EP5: Conference with moderator
+app.post('/conference', (request, response) => {
+    const twiml = new VoiceResponse();
+    const dial = twiml.dial();
+    if (request.body.From === process.env.M_PHONE_NUMBER) {
+        dial.conference('My conference', {
+            startConferenceOnEnter: true,
+            endConferenceOnExit: true,
+        });
+    }
+    else {
+        dial.conference('My conference', {
+            startConferenceOnEnter: false,
+        });
+    }
+    response.type('text/xml');
+    response.send(twiml.toString());
+});
 module.exports = app;
