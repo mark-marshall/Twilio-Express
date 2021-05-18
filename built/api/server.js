@@ -100,6 +100,25 @@ app.post('/addChatParticipant', (req, res) => __awaiter(void 0, void 0, void 0, 
     });
     res.status(200).json({ participantSid: participantB.sid });
 }));
+// EP9: Create Notify Binding
+app.post('/createNotifyBinding', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { identity, bindingType, address, tag } = req.body;
+    const newBinding = yield client.notify
+        .services(process.env.NOTIFY_SERVICE)
+        .bindings.create({ identity, bindingType, address, tag });
+    res.status(200).json({ participantSid: newBinding.sid });
+}));
+app.get('/a', (req, res) => {
+    res.status(200).json({ message: 'Alive' });
+});
+// EP10: Send Tag Notification
+app.post('/sendNotifyOnTags', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { tag, body } = req.body;
+    const newNotify = yield client.notify
+        .services(process.env.NOTIFY_SERVICE)
+        .notifications.create({ tag, body });
+    res.status(200).json({ participantSid: newNotify.sid });
+}));
 // ================== Voice Endpoints ==================
 // EP1: Say something and gather digits
 app.post('/say', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
