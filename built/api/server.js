@@ -257,4 +257,65 @@ app.post('/conference', (request, response) => {
     response.type('text/xml');
     response.send(twiml.toString());
 });
+// ================== Verify Endpoints ==================
+// EP1: Create Verify Service
+app.post('/createVerifyService', (request, response) => __awaiter(void 0, void 0, void 0, function* () {
+    const { friendlyName } = request.body;
+    const verify = yield client.verify.services.create({
+        friendlyName,
+    });
+    response.status(200).json({ verify });
+}));
+// EP2: Create Verify Token
+app.post('/createVerifyToken', (request, response) => __awaiter(void 0, void 0, void 0, function* () {
+    const { to, channel, verifySid } = request.body;
+    const token = yield client.verify
+        .services(verifySid)
+        .verifications.create({ to, channel });
+    response.status(200).json({ token });
+}));
+// EP3: Check verification
+app.post('/checkVerifyCode', (request, response) => __awaiter(void 0, void 0, void 0, function* () {
+    const { to, code, verifySid } = request.body;
+    const check = yield client.verify
+        .services(verifySid)
+        .verificationChecks.create({ to, code });
+    response.status(200).json({ check });
+}));
+// EP4: Creat TOTP Entity
+app.post('/createVerifyEntity', (request, response) => __awaiter(void 0, void 0, void 0, function* () {
+    const { identity, verifySid } = request.body;
+    const entity = yield client.verify
+        .services(verifySid)
+        .entities.create({ identity });
+    response.status(200).json({ entity });
+}));
+// EP4: Creat TOTP Factor
+app.post('/createVerifyFactor', (request, response) => __awaiter(void 0, void 0, void 0, function* () {
+    const { entitySid, friendlyName, factorType, verifySid } = request.body;
+    const factor = yield client.verify
+        .services(verifySid)
+        .entities(entitySid)
+        .newFactors.create({ friendlyName, factorType });
+    response.status(200).json({ factor });
+}));
+// EP6: Verify TOTP Factor
+app.post('/verifyFactor', (request, response) => __awaiter(void 0, void 0, void 0, function* () {
+    const { authPayload, entitySid, factorSid, verifySid } = request.body;
+    const totpVerify = yield client.verify
+        .services(verifySid)
+        .entities(entitySid)
+        .factors(factorSid)
+        .update({ authPayload });
+    response.status(200).json({ totpVerify });
+}));
+// EP7: TOTP Challenge
+app.post('/verifyCallenge', (request, response) => __awaiter(void 0, void 0, void 0, function* () {
+    const { authPayload, entitySid, factorSid, verifySid } = request.body;
+    const totpChallenge = yield client.verify
+        .services(verifySid)
+        .entities(entitySid)
+        .challenges.create({ authPayload, factorSid });
+    response.status(200).json({ totpChallenge });
+}));
 module.exports = app;

@@ -5,7 +5,10 @@ const Agent = require('./agent');
 mongoose.set('useCreateIndex', true);
 mongoose.set('useFindAndModify', false);
 const connectDb = () => {
-    return mongoose.connect(process.env.DATABASE_URL, { useNewUrlParser: true });
+    return mongoose.connect(process.env.DATABASE_URL, {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+    });
 };
 const models = { Agent };
 module.exports = {
